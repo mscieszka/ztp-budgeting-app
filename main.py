@@ -77,3 +77,24 @@ async def get_summary(db: Session = Depends(get_db)):
     return {
         "total_income": income_sum
     }
+
+@app.get("/transactions/total_spending", status_code=200)
+async def get_summary(db: Session = Depends(get_db)):
+    spending_total = db.query(DBTransaction).filter(DBTransaction.is_income == False).with_entities(DBTransaction.spending).all()
+    spending_sum = sum(x[0] for x in spending_total)
+
+    return {
+        "total_spending": spending_sum
+    }
+
+@app.get("/transactions/balance", status_code=200)
+async def get_summary(db: Session = Depends(get_db)):
+    spending_total = db.query(DBTransaction).filter(DBTransaction.is_income == False).with_entities(DBTransaction.spending).all()
+    spending_sum = sum(x[0] for x in spending_total)
+
+    income_total = db.query(DBTransaction).filter(DBTransaction.is_income == True).with_entities(DBTransaction.spending).all()
+    income_sum = sum(x[0] for x in income_total)
+
+    return {
+        "balance": round(income_sum - spending_sum, 2)
+    }
