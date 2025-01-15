@@ -35,7 +35,7 @@ class Transaction(BaseModel):
             "example": {
                 "transaction_date": "2025-01-13",
                 "title": "Grocery shopping",
-                "is_income": "True",
+                "is_income": True,
                 "spending": 21.37
             }
         }
