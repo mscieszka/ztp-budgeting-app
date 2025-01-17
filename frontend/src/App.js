@@ -19,6 +19,10 @@ const App = () => {
   });
 
   const [transactions, setTransactions] = useState([]);
+  const [notification, setNotification] = useState({
+    message: "",
+    type: "", // 'success' or 'error'
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,12 +48,20 @@ const App = () => {
       }
 
       const data = await response.json();
-      alert("Transaction added successfully: " + JSON.stringify(data));
-      fetchSummary(); 
+      
+      setNotification({
+        message: "Transaction added successfully!",
+        type: "success",
+      });
+
+      fetchSummary();
       fetchTransactions();
     } catch (error) {
       console.error("Error adding transaction:", error);
-      alert("Failed to add transaction.");
+      setNotification({
+        message: "Failed to add transaction.",
+        type: "error",
+      });
     }
   };
 
@@ -86,15 +98,21 @@ const App = () => {
       });
 
       if (response.ok) {
-        alert("Transaction deleted successfully!");
+        setNotification({
+          message: "Transaction deleted successfully!",
+          type: "success",
+        });
         fetchTransactions();
-        fetchSummary(); 
+        fetchSummary();
       } else {
         throw new Error(`Failed to delete transaction`);
       }
     } catch (error) {
       console.error("Error deleting transaction:", error);
-      alert("Failed to delete transaction.");
+      setNotification({
+        message: "Failed to delete transaction.",
+        type: "error",
+      });
     }
   };
 
@@ -105,123 +123,132 @@ const App = () => {
 
   return (
     <div>
-    <div className="form-container">
-      <h3>Add Transaction</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Transaction Date</label>
-          <input
-            type="date"
-            name="transaction_date"
-            value={formData.transaction_date}
-            onChange={handleChange}
-            required
-          />
+      {notification.message && (
+        <div className={`notification ${notification.type}`}>
+          <span>{notification.message}</span>
+          <button onClick={() => setNotification({ message: "", type: "" })}>X</button>
         </div>
+      )}
 
-        <div className="form-group">
-          <label>Title</label>
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Type</label>
-          <select 
-            name="is_income" 
-            value={formData.is_income} 
-            onChange={handleChange}
-          >
-            <option value="false">Expense</option>
-            <option value="true">Income</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Amount</label>
-          <input
-            type="number"
-            name="spending"
-            value={formData.spending}
-            onChange={handleChange}
-            required
-            min="0"
-            step="1"
-            max="10000000"
-          />
-        </div>
-
-        <button type="submit">Add Transaction</button>
-      </form>
-    </div>
-    <div className="summary-container">
-      <section className="summary-section">
-        <h3>Summary</h3>
-        <div className="summary-grid">
-          <div className="summary-item">
-            <span className="summary-label">Total Income</span>
-            <span className="summary-value income">${summary.total_income.toFixed(2)}</span>
+      <div className="form-container">
+        <h3>Add Transaction</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Transaction Date</label>
+            <input
+              type="date"
+              name="transaction_date"
+              value={formData.transaction_date}
+              onChange={handleChange}
+              required
+            />
           </div>
-          <div className="summary-item">
-            <span className="summary-label">Total Spending</span>
-            <span className="summary-value expense">${summary.total_spending.toFixed(2)}</span>
-          </div>
-          <div className="summary-item">
-            <span className="summary-label">Balance</span>
-            <span className={`summary-value ${summary.balance >= 0 ? 'income' : 'expense'}`}>
-              ${summary.balance.toFixed(2)}
-            </span>
-          </div>
-        </div>
-      </section>
 
-      <section className="transactions-section">
-        <h3>Transaction Details</h3>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td>{transaction.transaction_date}</td>
-                  <td>{transaction.title}</td>
-                  <td>
-                    <span className={`transaction-type ${transaction.is_income ? 'income' : 'expense'}`}>
-                      {transaction.is_income ? 'Income' : 'Expense'}
-                    </span>
-                  </td>
-                  <td className={transaction.is_income ? 'income' : 'expense'}>
-                    ${transaction.spending.toFixed(2)}
-                  </td>
-                  <td>
-                    <button 
-                      className="delete-button" 
-                      onClick={() => handleDelete(transaction.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="form-group">
+            <label>Title</label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Type</label>
+            <select 
+              name="is_income" 
+              value={formData.is_income} 
+              onChange={handleChange}
+            >
+              <option value="false">Expense</option>
+              <option value="true">Income</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Amount</label>
+            <input
+              type="number"
+              name="spending"
+              value={formData.spending}
+              onChange={handleChange}
+              required
+              min="0"
+              step="0.01" // Changed to allow decimal values
+            />
+          </div>
+
+          <button type="submit">Add Transaction</button>
+        </form>
+      </div>
+
+      {/* Summary Section */}
+      <div className="summary-container">
+        <section className="summary-section">
+          <h3>Summary</h3>
+          <div className="summary-grid">
+            <div className="summary-item">
+              <span className="summary-label">Total Income</span>
+              <span className="summary-value income">${summary.total_income.toFixed(2)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Total Spending</span>
+              <span className="summary-value expense">${summary.total_spending.toFixed(2)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Balance</span>
+              <span className={`summary-value ${summary.balance >= 0 ? 'income' : 'expense'}`}>
+                ${summary.balance.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Transactions Table */}
+        <section className="transactions-section">
+          <h3>Transaction Details</h3>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {transactions.map((transaction) => (
+                  <tr key={transaction.id}>
+                    <td>{transaction.transaction_date}</td>
+                    <td>{transaction.title}</td>
+                    <td>
+                      <span className={`transaction-type ${transaction.is_income ? 'income' : 'expense'}`}>
+                        {transaction.is_income ? 'Income' : 'Expense'}
+                      </span>
+                    </td>
+                    <td className={transaction.is_income ? 'income' : 'expense'}>
+                      ${transaction.spending.toFixed(2)}
+                    </td>
+                    <td>
+                      <button 
+                        className="delete-button" 
+                        onClick={() => handleDelete(transaction.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </div>
-  </div>
   );
 };
 

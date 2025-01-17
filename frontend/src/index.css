@@ -11,3 +11,24 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.notification {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px;
+  color: white;
+}
+
+.notification.success {
+  background-color: green;
+}
+
+.notification.error {
+  background-color: red;
+}
+
+.notification button {
+  color: blue;
+}
+
