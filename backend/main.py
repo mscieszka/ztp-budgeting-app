@@ -2,7 +2,6 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel, Field
 from datetime import date
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, Date, Double
-#from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,10 +9,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Adjust if your frontend runs on a different URL
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 DATABASE_URL = "sqlite:///./test.db"
@@ -33,12 +32,11 @@ class DBTransaction(Base):
 Base.metadata.create_all(bind=engine)
 
 class Transaction(BaseModel):
-    id: int  # Dodajemy pole `id` do modelu
     transaction_date: date = Field(..., description="Date of the transaction")
     title: str = Field(..., min_length=1, max_length=200, description="Transaction title")
     is_income: bool = Field(..., description="True if this is income, False if expense")
     spending: float = Field(..., ge=0, description="Transaction amount")
-
+    id: int = None 
 
     class Config:
         json_schema_extra = {
@@ -69,16 +67,16 @@ async def add_transaction(transaction: Transaction, db: Session = Depends(get_db
     db.add(db_transaction)
     db.commit()
     db.refresh(db_transaction)
-    db_transaction_check = db.query(DBTransaction).filter(DBTransaction.id == db_transaction.id).first()
     
-    if db_transaction_check:
-        return db_transaction_check
-    else:
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to create transaction"
-        )
+    transaction_response = Transaction(
+        id=db_transaction.id,
+        transaction_date=db_transaction.transaction_date,
+        title=db_transaction.title,
+        is_income=db_transaction.is_income,
+        spending=db_transaction.spending
+    )
     
+    return transaction_response
 
 @app.get("/transactions/total_income", status_code=200)
 async def get_summary(db: Session = Depends(get_db)):
@@ -112,7 +110,7 @@ async def get_summary(db: Session = Depends(get_db)):
 
 @app.get("/transactions", response_model=list[Transaction], status_code=200)
 async def get_transactions(db: Session = Depends(get_db)):
-    transactions = db.query(DBTransaction).all()  # Pobiera wszystkie transakcje
+    transactions = db.query(DBTransaction).all()  
     return transactions
 
 

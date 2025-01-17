@@ -42,13 +42,13 @@ const App = () => {
       const data = await response.json();
       alert("Transaction added successfully: " + JSON.stringify(data));
       fetchSummary(); 
+      fetchTransactions();
     } catch (error) {
       console.error("Error adding transaction:", error);
       alert("Failed to add transaction.");
     }
   };
 
-  // Funkcja do pobierania podsumowania z backendu
   const fetchSummary = async () => {
     try {
       const incomeResponse = await fetch("http://localhost:8000/transactions/total_income");
@@ -73,6 +73,24 @@ const App = () => {
     const response = await fetch("http://localhost:8000/transactions");
     const data = await response.json();
     setTransactions(data);
+  };
+
+  const handleDelete = async (transactionId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/transactions/${transactionId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        alert("Transaction deleted successfully!");
+        fetchTransactions(); 
+      } else {
+        throw new Error(`Failed to delete transaction`);
+      }
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      alert("Failed to delete transaction.");
+    }
   };
 
   useEffect(() => {
@@ -140,8 +158,8 @@ const App = () => {
         </div>
       </div>
 
-            {/* Historia transakcji */}
-            <h3>Transaction Details</h3>
+      {/* Historia transakcji */}
+      <h3>Transaction Details</h3>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
@@ -149,17 +167,21 @@ const App = () => {
             <th style={{ border: "1px solid black", padding: "8px" }}>Title</th>
             <th style={{ border: "1px solid black", padding: "8px" }}>Type</th>
             <th style={{ border: "1px solid black", padding: "8px" }}>Amount</th>
+            <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {transactions.map((transaction, index) => (
-            <tr key={index}>
+          {transactions.map((transaction) => (
+            <tr key={transaction.id}>
               <td style={{ border: "1px solid black", padding: "8px" }}>{transaction.transaction_date}</td>
               <td style={{ border: "1px solid black", padding: "8px" }}>{transaction.title}</td>
               <td style={{ border: "1px solid black", padding: "8px" }}>
                 {transaction.is_income ? "Income" : "Expense"}
               </td>
               <td style={{ border: "1px solid black", padding: "8px" }}>${transaction.spending.toFixed(2)}</td>
+              <td style={{ border: "1px solid black", padding: "8px" }}>
+                <button onClick={() => handleDelete(transaction.id)}>Delete</button>
+              </td>
             </tr>
           ))}
         </tbody>
