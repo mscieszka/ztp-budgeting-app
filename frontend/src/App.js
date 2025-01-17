@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
+import './TransactionForm.css';
+import './TransactionSummary.css';
 
 const host = "http://localhost:8080";
 
 const App = () => {
   const [formData, setFormData] = useState({
-    transaction_date: "",
+    transaction_date: new Date().toISOString().split("T")[0], // Default to today's date
     title: "",
     is_income: true,
-    spending: "",
+    spending: 50,
   });
 
   const [summary, setSummary] = useState({
@@ -102,11 +104,12 @@ const App = () => {
   }, []);
 
   return (
-    <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
-      <h2>Add Transaction</h2>
+    <div>
+    <div className="form-container">
+      <h3>Add Transaction</h3>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Transaction Date:</label>
+        <div className="form-group">
+          <label>Transaction Date</label>
           <input
             type="date"
             name="transaction_date"
@@ -115,8 +118,9 @@ const App = () => {
             required
           />
         </div>
-        <div>
-          <label>Title:</label>
+
+        <div className="form-group">
+          <label>Title</label>
           <input
             type="text"
             name="title"
@@ -125,15 +129,21 @@ const App = () => {
             required
           />
         </div>
-        <div>
-          <label>Is Income:</label>
-          <select name="is_income" value={formData.is_income} onChange={handleChange}>
-            <option value="true">Income</option>
+
+        <div className="form-group">
+          <label>Type</label>
+          <select 
+            name="is_income" 
+            value={formData.is_income} 
+            onChange={handleChange}
+          >
             <option value="false">Expense</option>
+            <option value="true">Income</option>
           </select>
         </div>
-        <div>
-          <label>Spending Amount:</label>
+
+        <div className="form-group">
+          <label>Amount</label>
           <input
             type="number"
             name="spending"
@@ -141,55 +151,77 @@ const App = () => {
             onChange={handleChange}
             required
             min="0"
-            step="0.01"
+            step="1"
+            max="10000000"
           />
         </div>
+
         <button type="submit">Add Transaction</button>
       </form>
-
-      {/* Podsumowanie */}
-      <h3>Summary</h3>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <strong>Total Income:</strong> {summary.total_income.toFixed(2)}
-        </div>
-        <div>
-          <strong>Total Spending:</strong> {summary.total_spending.toFixed(2)}
-        </div>
-        <div>
-          <strong>Balance:</strong> {summary.balance.toFixed(2)}
-        </div>
-      </div>
-
-      {/* Historia transakcji */}
-      <h3>Transaction Details</h3>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ border: "1px solid black", padding: "8px" }}>Date</th>
-            <th style={{ border: "1px solid black", padding: "8px" }}>Title</th>
-            <th style={{ border: "1px solid black", padding: "8px" }}>Type</th>
-            <th style={{ border: "1px solid black", padding: "8px" }}>Amount</th>
-            <th style={{ border: "1px solid black", padding: "8px" }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((transaction) => (
-            <tr key={transaction.id}>
-              <td style={{ border: "1px solid black", padding: "8px" }}>{transaction.transaction_date}</td>
-              <td style={{ border: "1px solid black", padding: "8px" }}>{transaction.title}</td>
-              <td style={{ border: "1px solid black", padding: "8px" }}>
-                {transaction.is_income ? "Income" : "Expense"}
-              </td>
-              <td style={{ border: "1px solid black", padding: "8px" }}>${transaction.spending.toFixed(2)}</td>
-              <td style={{ border: "1px solid black", padding: "8px" }}>
-                <button onClick={() => handleDelete(transaction.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
+    <div className="summary-container">
+      <section className="summary-section">
+        <h3>Summary</h3>
+        <div className="summary-grid">
+          <div className="summary-item">
+            <span className="summary-label">Total Income</span>
+            <span className="summary-value income">${summary.total_income.toFixed(2)}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Total Spending</span>
+            <span className="summary-value expense">${summary.total_spending.toFixed(2)}</span>
+          </div>
+          <div className="summary-item">
+            <span className="summary-label">Balance</span>
+            <span className={`summary-value ${summary.balance >= 0 ? 'income' : 'expense'}`}>
+              ${summary.balance.toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="transactions-section">
+        <h3>Transaction Details</h3>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((transaction) => (
+                <tr key={transaction.id}>
+                  <td>{transaction.transaction_date}</td>
+                  <td>{transaction.title}</td>
+                  <td>
+                    <span className={`transaction-type ${transaction.is_income ? 'income' : 'expense'}`}>
+                      {transaction.is_income ? 'Income' : 'Expense'}
+                    </span>
+                  </td>
+                  <td className={transaction.is_income ? 'income' : 'expense'}>
+                    ${transaction.spending.toFixed(2)}
+                  </td>
+                  <td>
+                    <button 
+                      className="delete-button" 
+                      onClick={() => handleDelete(transaction.id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
   );
 };
 
