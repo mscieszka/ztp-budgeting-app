@@ -85,7 +85,8 @@ const App = () => {
 
       if (response.ok) {
         alert("Transaction deleted successfully!");
-        fetchTransactions(); 
+        fetchTransactions();
+        fetchSummary(); 
       } else {
         throw new Error(`Failed to delete transaction`);
       }
