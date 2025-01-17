@@ -33,6 +33,7 @@ class DBTransaction(Base):
 Base.metadata.create_all(bind=engine)
 
 class Transaction(BaseModel):
+    id: int  # Dodajemy pole `id` do modelu
     transaction_date: date = Field(..., description="Date of the transaction")
     title: str = Field(..., min_length=1, max_length=200, description="Transaction title")
     is_income: bool = Field(..., description="True if this is income, False if expense")
@@ -42,6 +43,7 @@ class Transaction(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
+                "id": 1,
                 "transaction_date": "2025-01-13",
                 "title": "Grocery shopping",
                 "is_income": True,
@@ -107,3 +109,20 @@ async def get_summary(db: Session = Depends(get_db)):
     return {
         "balance": round(income_sum - spending_sum, 2)
     }
+
+@app.get("/transactions", response_model=list[Transaction], status_code=200)
+async def get_transactions(db: Session = Depends(get_db)):
+    transactions = db.query(DBTransaction).all()  # Pobiera wszystkie transakcje
+    return transactions
+
+
+@app.delete("/transactions/{transaction_id}", status_code=204)
+async def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
+    db_transaction = db.query(DBTransaction).filter(DBTransaction.id == transaction_id).first()
+    
+    if db_transaction:
+        db.delete(db_transaction)
+        db.commit()
+        return {"message": "Transaction successfully deleted"}
+    else:
+        raise HTTPException(status_code=404, detail="Transaction not found")
