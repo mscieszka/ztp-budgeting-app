@@ -11,16 +11,16 @@ services:
     environment:
       - DATABASE_URL=sqlite:///./data/test.db  # This tells SQLAlchemy where to store the database
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "3000:80"
-  #   volumes:
-  #     - ./frontend:/app
-  #   depends_on:
-  #     - backend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
 
 volumes:
   data: # This is where the SQLite database file will be stored

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 
+const host = "http://localhost:8080";
+
 const App = () => {
   const [formData, setFormData] = useState({
     transaction_date: "",
@@ -27,7 +29,7 @@ const App = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/transactions", {
+      const response = await fetch(host + "/transactions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,9 +53,9 @@ const App = () => {
 
   const fetchSummary = async () => {
     try {
-      const incomeResponse = await fetch("http://localhost:8000/transactions/total_income");
-      const spendingResponse = await fetch("http://localhost:8000/transactions/total_spending");
-      const balanceResponse = await fetch("http://localhost:8000/transactions/balance");
+      const incomeResponse = await fetch(host + "/transactions/total_income");
+      const spendingResponse = await fetch(host + "/transactions/total_spending");
+      const balanceResponse = await fetch(host + "/transactions/balance");
 
       const incomeData = await incomeResponse.json();
       const spendingData = await spendingResponse.json();
@@ -70,14 +72,14 @@ const App = () => {
   };
 
   const fetchTransactions = async () => {
-    const response = await fetch("http://localhost:8000/transactions");
+    const response = await fetch(host + "/transactions");
     const data = await response.json();
     setTransactions(data);
   };
 
   const handleDelete = async (transactionId) => {
     try {
-      const response = await fetch(`http://localhost:8000/transactions/${transactionId}`, {
+      const response = await fetch(host + `/transactions/${transactionId}`, {
         method: "DELETE",
       });
 
