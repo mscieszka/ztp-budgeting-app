@@ -50,7 +50,7 @@ const App = () => {
       const data = await response.json();
       
       setNotification({
-        message: "Transaction added successfully!",
+        message: "Transaction added!",
         type: "success",
       });
 
@@ -99,7 +99,7 @@ const App = () => {
 
       if (response.ok) {
         setNotification({
-          message: "Transaction deleted successfully!",
+          message: "Transaction deleted!",
           type: "success",
         });
         fetchTransactions();
